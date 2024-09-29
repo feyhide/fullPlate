@@ -78,6 +78,13 @@ declare interface GoogleInputProps {
     }) => void;
 }
 
+declare interface MapboxSuggestion {
+    place_name: string;
+    geometry: {
+        coordinates: [number, number]; // [longitude, latitude]
+    };
+    id: string; // Unique identifier
+}
 declare interface InputFieldProps extends TextInputProps {
     label: string;
     icon?: any;

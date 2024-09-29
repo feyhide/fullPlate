@@ -74,18 +74,20 @@ export const calculateRegion = ({
 };
 
 export const calculateDriverTimes = async ({
-                                               markers,
-                                               userLatitude,
-                                               userLongitude,
-                                               destinationLatitude,
-                                               destinationLongitude,
-                                           }: {
+    markers,
+    userLatitude,
+    userLongitude,
+    destinationLatitude,
+    destinationLongitude,
+}: {
     markers: MarkerData[];
     userLatitude: number | null;
     userLongitude: number | null;
     destinationLatitude: number | null;
     destinationLongitude: number | null;
 }) => {
+    const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN; // Ensure you set this in your environment
+
     if (
         !userLatitude ||
         !userLongitude ||
@@ -96,18 +98,29 @@ export const calculateDriverTimes = async ({
 
     try {
         const timesPromises = markers.map(async (marker) => {
+            // Request to Mapbox for time from marker to user
             const responseToUser = await fetch(
-                `https://maps.googleapis.com/maps/api/directions/json?origin=${marker.latitude},${marker.longitude}&destination=${userLatitude},${userLongitude}&key=${directionsAPI}`,
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${marker.longitude},${marker.latitude};${userLongitude},${userLatitude}?access_token=${MAPBOX_ACCESS_TOKEN}`
             );
-            const dataToUser = await responseToUser.json();
-            const timeToUser = dataToUser.routes[0].legs[0].duration.value; // Time in seconds
 
+            if (!responseToUser.ok) {
+                throw new Error(`Error fetching directions for marker ${marker.id}: ${responseToUser.statusText}`);
+            }
+
+            const dataToUser = await responseToUser.json();
+            const timeToUser = dataToUser.routes[0].duration; // Time in seconds
+
+            // Request to Mapbox for time from user to destination
             const responseToDestination = await fetch(
-                `https://maps.googleapis.com/maps/api/directions/json?origin=${userLatitude},${userLongitude}&destination=${destinationLatitude},${destinationLongitude}&key=${directionsAPI}`,
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${userLongitude},${userLatitude};${destinationLongitude},${destinationLatitude}?access_token=${MAPBOX_ACCESS_TOKEN}`
             );
+
+            if (!responseToDestination.ok) {
+                throw new Error(`Error fetching directions to destination: ${responseToDestination.statusText}`);
+            }
+
             const dataToDestination = await responseToDestination.json();
-            const timeToDestination =
-                dataToDestination.routes[0].legs[0].duration.value; // Time in seconds
+            const timeToDestination = dataToDestination.routes[0].duration; // Time in seconds
 
             const totalTime = (timeToUser + timeToDestination) / 60; // Total time in minutes
             const price = (totalTime * 0.5).toFixed(2); // Calculate price based on time

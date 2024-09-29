@@ -120,10 +120,11 @@ export default function Page() {
   }
   const handleDestinationPress = async(location:{latitude:number,longitude:number,address:string}) =>{
     setDestinationLocation(location);
-    router.push('/(root)\find-ride')
+    router.push('/(root)/find-ride')
   }
 
   const [hasPermission,setHasPermission] = useState(false)
+  
   useEffect(()=>{
     const requestLocation = async()=>{
       let {status} = await Location.requestForegroundPermissionsAsync()
@@ -136,6 +137,7 @@ export default function Page() {
         latitude: location.coords?.latitude!,
         longitude: location.coords?.longitude!
       })
+      console.log(address)
       setUserLocation({
         latitude:location.coords.latitude,
         longitude:location.coords.longitude,
