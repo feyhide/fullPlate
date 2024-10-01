@@ -8,10 +8,10 @@ import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo'
 import { Slot } from 'expo-router'
 import { tokenCache } from '@/lib/auth';
 
-
+import { LogBox } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
-
+LogBox.ignoreLogs(["Clerk:"])
 export default function RootLayout() {
   const [loaded] = useFonts({
       "Jakarta-Bold": require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
@@ -33,11 +33,9 @@ export default function RootLayout() {
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(root)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          
-          <Stack.Screen name="+not-found" />
+          <Stack.Screen name="+not-found" options={{ headerShown: false }} />
         </Stack>
       </ClerkLoaded>
     </ClerkProvider>
